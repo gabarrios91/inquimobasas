@@ -5,6 +5,11 @@
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page import="java.sql.Connection"%>
+<%@page import="java.sql.DriverManager"%>
+<%@page import="java.sql.Statement"%>
+<%@page import="java.sql.ResultSet"%>
+<%@page import="java.sql.SQLException"%>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -144,70 +149,58 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <!-- Este espacio es para conectar con la base de datos -->
                                     <%
-                                        // Ejemplo de código para conectar con base de datos
-                                        /*
+                                        Connection con = null;
+                                        Statement stmt = null;
+                                        ResultSet rs = null;
+                                        
                                         try {
-                                            Class.forName("com.mysql.jdbc.Driver");
-                                            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/tu_basedatos", "usuario", "contraseña");
-                                            Statement stmt = con.createStatement();
-                                            ResultSet rs = stmt.executeQuery("SELECT * FROM productos");
+                                            // Cargar el controlador de MySQL
+                                            Class.forName("com.mysql.cj.jdbc.Driver");
                                             
+                                            // Establecer la conexión con la base de datos
+                                            String url = "jdbc:mysql://localhost:3306/db_inquimoba";
+                                            String usuario = "root";
+                                            String contraseña = ""; // Cambia si tienes contraseña
+                                            
+                                            con = DriverManager.getConnection(url, usuario, contraseña);
+                                            stmt = con.createStatement();
+                                            
+                                            // Ejecutar consulta para obtener los productos
+                                            String sql = "SELECT * FROM productos";
+                                            rs = stmt.executeQuery(sql);
+                                            
+                                            // Mostrar los resultados en la tabla
                                             while(rs.next()) {
-                                                out.println("<tr>");
-                                                out.println("<td>" + rs.getString("id") + "</td>");
-                                                out.println("<td>" + rs.getString("nombre") + "</td>");
-                                                out.println("<td>" + rs.getString("descripcion") + "</td>");
-                                                out.println("<td>" + rs.getString("precio") + "</td>");
-                                                out.println("<td>" + rs.getString("stock") + "</td>");
-                                                out.println("<td>");
-                                                out.println("<button class='btn btn-sm btn-primary'><i class='fas fa-edit'></i></button>");
-                                                out.println("<button class='btn btn-sm btn-danger'><i class='fas fa-trash'></i></button>");
-                                                out.println("</td>");
-                                                out.println("</tr>");
-                                            }
-                                            con.close();
-                                        } catch(Exception e) {
-                                            out.println(e);
-                                        }
-                                        */
                                     %>
-                                    
-                                    <!-- Datos de ejemplo (eliminar cuando se conecte a la base de datos) -->
-                                    <tr>
-                                        <td>P001</td>
-                                        <td>Reactivo Químico A</td>
-                                        <td>Reactivo para procesos de limpieza industrial</td>
-                                        <td>$120.000</td>
-                                        <td>50</td>
-                                        <td>
-                                            <button class="btn btn-sm btn-primary"><i class="fas fa-edit"></i></button>
-                                            <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>P002</td>
-                                        <td>Equipo Medición pH</td>
-                                        <td>Medidor digital de pH para laboratorio</td>
-                                        <td>$850.000</td>
-                                        <td>12</td>
-                                        <td>
-                                            <button class="btn btn-sm btn-primary"><i class="fas fa-edit"></i></button>
-                                            <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>P003</td>
-                                        <td>Filtro Industrial</td>
-                                        <td>Filtro para procesos de purificación de agua</td>
-                                        <td>$1.200.000</td>
-                                        <td>8</td>
-                                        <td>
-                                            <button class="btn btn-sm btn-primary"><i class="fas fa-edit"></i></button>
-                                            <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
-                                        </td>
-                                    </tr>
+                                                <tr>
+                                                    <td><%= rs.getString("id") %></td>
+                                                    <td><%= rs.getString("nombre") %></td>
+                                                    <td><%= rs.getString("descripcion") %></td>
+                                                    <td>$<%= rs.getString("precio") %></td>
+                                                    <td><%= rs.getString("stock") %></td>
+                                                    <td>
+                                                        <button class="btn btn-sm btn-primary"><i class="fas fa-edit"></i></button>
+                                                        <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                                                    </td>
+                                                </tr>
+                                    <%
+                                            }
+                                        } catch(ClassNotFoundException e) {
+                                            out.println("<tr><td colspan='6'>Error: No se encontró el controlador de la base de datos</td></tr>");
+                                        } catch(SQLException e) {
+                                            out.println("<tr><td colspan='6'>Error de conexión a la base de datos: " + e.getMessage() + "</td></tr>");
+                                        } finally {
+                                            // Cerrar recursos
+                                            try {
+                                                if(rs != null) rs.close();
+                                                if(stmt != null) stmt.close();
+                                                if(con != null) con.close();
+                                            } catch(SQLException e) {
+                                                out.println("<tr><td colspan='6'>Error al cerrar conexión: " + e.getMessage() + "</td></tr>");
+                                            }
+                                        }
+                                    %>
                                 </tbody>
                             </table>
                             
