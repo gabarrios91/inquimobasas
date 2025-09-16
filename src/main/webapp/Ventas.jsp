@@ -5,6 +5,11 @@
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page import="java.sql.Connection"%>
+<%@page import="java.sql.DriverManager"%>
+<%@page import="java.sql.Statement"%>
+<%@page import="java.sql.ResultSet"%>
+<%@page import="java.sql.SQLException"%>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -146,78 +151,71 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <!-- Este espacio es para conectar con la base de datos -->
                                     <%
-                                        // Ejemplo de código para conectar con base de datos
-                                        /*
+                                        Connection con = null;
+                                        Statement stmt = null;
+                                        ResultSet rs = null;
+                                        
                                         try {
-                                            Class.forName("com.mysql.jdbc.Driver");
-                                            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/tu_basedatos", "usuario", "contraseña");
-                                            Statement stmt = con.createStatement();
-                                            ResultSet rs = stmt.executeQuery("SELECT * FROM ventas");
+                                            // Cargar el controlador de MySQL
+                                            Class.forName("com.mysql.cj.jdbc.Driver");
                                             
+                                            // Establecer la conexión con la base de datos
+                                            String url = "jdbc:mysql://localhost:3306/db_inquimoba";
+                                            String usuario = "root";
+                                            String contraseña = ""; // Cambia si tienes contraseña
+                                            
+                                            con = DriverManager.getConnection(url, usuario, contraseña);
+                                            stmt = con.createStatement();
+                                            
+                                            // Ejecutar consulta para obtener las ventas
+                                            // Asumiendo que tienes una tabla "ventas" y una tabla "productos" relacionada
+                                            String sql = "SELECT v.*, p.nombre as producto_nombre FROM ventas v " +
+                                                       "LEFT JOIN productos p ON v.producto_id = p.id " +
+                                                       "ORDER BY v.fecha DESC";
+                                            rs = stmt.executeQuery(sql);
+                                            
+                                            // Mostrar los resultados en la tabla
                                             while(rs.next()) {
-                                                out.println("<tr>");
-                                                out.println("<td>" + rs.getString("id_venta") + "</td>");
-                                                out.println("<td>" + rs.getString("fecha") + "</td>");
-                                                out.println("<td>" + rs.getString("cliente") + "</td>");
-                                                out.println("<td>" + rs.getString("producto") + "</td>");
-                                                out.println("<td>" + rs.getString("cantidad") + "</td>");
-                                                out.println("<td>" + rs.getString("total") + "</td>");
-                                                out.println("<td><span class='badge bg-"+ (rs.getString("estado").equals("Completada") ? "success" : "warning") +"'>" + rs.getString("estado") + "</span></td>");
-                                                out.println("<td>");
-                                                out.println("<button class='btn btn-sm btn-info'><i class='fas fa-eye'></i></button>");
-                                                out.println("<button class='btn btn-sm btn-warning'><i class='fas fa-receipt'></i></button>");
-                                                out.println("</td>");
-                                                out.println("</tr>");
-                                            }
-                                            con.close();
-                                        } catch(Exception e) {
-                                            out.println(e);
-                                        }
-                                        */
+                                                String estado = rs.getString("estado");
+                                                String badgeClass = "success";
+                                                
+                                                if ("Pendiente".equals(estado)) {
+                                                    badgeClass = "warning";
+                                                } else if ("Cancelada".equals(estado)) {
+                                                    badgeClass = "danger";
+                                                }
                                     %>
-                                    
-                                    <!-- Datos de ejemplo (eliminar cuando se conecte a la base de datos) -->
-                                    <tr>
-                                        <td>V001</td>
-                                        <td>15/09/2025</td>
-                                        <td>Química Andina S.A.</td>
-                                        <td>Reactivo Químico A</td>
-                                        <td>5</td>
-                                        <td>$600.000</td>
-                                        <td><span class="badge bg-success">Completada</span></td>
-                                        <td>
-                                            <button class="btn btn-sm btn-info"><i class="fas fa-eye"></i></button>
-                                            <button class="btn btn-sm btn-warning"><i class="fas fa-receipt"></i></button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>V002</td>
-                                        <td>14/09/2025</td>
-                                        <td>Laboratorios BioTech</td>
-                                        <td>Equipo Medición pH</td>
-                                        <td>2</td>
-                                        <td>$1.700.000</td>
-                                        <td><span class="badge bg-success">Completada</span></td>
-                                        <td>
-                                            <button class="btn btn-sm btn-info"><i class="fas fa-eye"></i></button>
-                                            <button class="btn btn-sm btn-warning"><i class="fas fa-receipt"></i></button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>V003</td>
-                                        <td>13/09/2025</td>
-                                        <td>Purificadora del Norte</td>
-                                        <td>Filtro Industrial</td>
-                                        <td>1</td>
-                                        <td>$1.200.000</td>
-                                        <td><span class="badge bg-warning">Pendiente</span></td>
-                                        <td>
-                                            <button class="btn btn-sm btn-info"><i class="fas fa-eye"></i></button>
-                                            <button class="btn btn-sm btn-warning"><i class="fas fa-receipt"></i></button>
-                                        </td>
-                                    </tr>
+                                                <tr>
+                                                    <td><%= rs.getString("id") %></td>
+                                                    <td><%= rs.getString("fecha") %></td>
+                                                    <td><%= rs.getString("cliente") %></td>
+                                                    <td><%= rs.getString("producto_nombre") != null ? rs.getString("producto_nombre") : "Producto no disponible" %></td>
+                                                    <td><%= rs.getString("cantidad") %></td>
+                                                    <td>$<%= rs.getString("total") %></td>
+                                                    <td><span class="badge bg-<%= badgeClass %>"><%= estado %></span></td>
+                                                    <td>
+                                                        <button class="btn btn-sm btn-info"><i class="fas fa-eye"></i></button>
+                                                        <button class="btn btn-sm btn-warning"><i class="fas fa-receipt"></i></button>
+                                                    </td>
+                                                </tr>
+                                    <%
+                                            }
+                                        } catch(ClassNotFoundException e) {
+                                            out.println("<tr><td colspan='8'>Error: No se encontró el controlador de la base de datos</td></tr>");
+                                        } catch(SQLException e) {
+                                            out.println("<tr><td colspan='8'>Error de conexión a la base de datos: " + e.getMessage() + "</td></tr>");
+                                        } finally {
+                                            // Cerrar recursos
+                                            try {
+                                                if(rs != null) rs.close();
+                                                if(stmt != null) stmt.close();
+                                                if(con != null) con.close();
+                                            } catch(SQLException e) {
+                                                out.println("<tr><td colspan='8'>Error al cerrar conexión: " + e.getMessage() + "</td></tr>");
+                                            }
+                                        }
+                                    %>
                                 </tbody>
                             </table>
                             
